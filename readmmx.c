@@ -1,28 +1,24 @@
+/*
+reads matrix market format files
+*/
+
+//todo if not included include
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h> //seriously C, i have in include bool??
-#include <string.h>
+#include <string.h> //for str funcs like strcmp
+
+
+#include "mmtypes.h"
+//eh no need. include mmtypes.def which defines data structs and 
+//assoc  funcs
+
 //nice. no function depends on a global variable :)
+//the design is modular. every function is given a context.
+//..the function does not push back
+//se stderr
+//todo enum errors
 
 
-//reads matrix market format
-//can be either format  array(dense) or coord(sparse)
-
-#define nMAXLINE  200 //why should i need to declare a limit??
-const char *strmmid="%%MatrixMarket";
-#define WLEN 30
-/*the above line makes WLEN  compile-time constant
-  const int wlen=123 is not compile-time constant which
-  generates an error originating in the struct definition
-  why? idk*/
-//const int WLEN=30;//"word length"
-
-typedef struct {char object[WLEN],format[WLEN],field[WLEN],symmetry[WLEN];}
-  structheader;
-typedef struct {unsigned long int nrows, ncols , nonzeros;}
-  structsize;
-typedef struct {structheader header; structsize size;}
-  structmmfileattribs ;
 
 //nice to make a logical errors table
 //.. could use switch statement to id
@@ -40,20 +36,48 @@ static bool isblank(char *aline);
 static int putheaderinfo(char *aline, structheader *header);
 static int putsizeinfo(char *aline, structsize *size);
 //higher level
-static unsigned int putfileattribs(FILE *pfile,structmmfileattribs *mmfattribs);
+unsigned int putfileattribs(FILE *pfile,structmmfileattribs *mmfattribs);
+
+
+
+static void *returnpointerarray(structheader *header);
+
+
 
 //combos of header fields correspond to a dataline dtype
 //which i will make a struct. make an array of them
 //then 
-//define mracros standing for parts of a truth table meaning T
+
 
 /* //2. reading */
 /* static void readdataline(structheader *headerattribs); */
 //malloc the dtype?
 //use void ptrs to a determined dtype output
 //structmmfileattribs *mmfattribs determines -> dtype
-static void *extractdataline(ptrtodtype,char *aline);
-static void 
+//static void *extractdataline(ptrdtype,char *aline);
+//static void 
+
+//define MMATRIX to be evaluate strcomp
+//associate a number with all combos
+
+//list of dtypes and myfunctions corresponding to datalines
+//list of myfunctions(scanf(aline)) that could be pointed to
+//header -> myfunctions (scanf call -> into data struct
+//  func(header)
+//value field is common 
+//list scanning fncs when i call the below i already know types
+//readnlines(header,pfile,n)if real then:
+//   realreader(aline,*realdatastruc){scanf("%d %d",datastructmmbrs=>)}
+//gives back num of elems which can be used to chk.
+//return scanning function (header, 
+
+//1. def howtoreadline(mmfileattribs) returns ptrs to
+//specific funcs, and data structs struct {void *ptrtofun, void *ptrtodtype}
+//2. then just have a generic readline(aline,ptrtofunc,ptrtodatastruct)
+
+
+
+//if i wanted to read past
 
 
 //todo the command line checks the file
@@ -77,6 +101,13 @@ int main(){
 fclose(pfile);
 
 return 0;}
+
+
+static void *returnpointerarray(structheader *header){
+
+
+}
+
 
 static bool isblank(char *aline){
   //if (aline[0]=='\r' || aline[0]=='\n'){return true;}
@@ -114,7 +145,7 @@ format:    coordinate or array
 field:     real, double, complex, integer, or pattern
 symmetry:  general (legal for real, complex, integer, or pattern fields)
            symmetric (for real, complex, integer, or pattern)
-           skew-symmetric (rea, complex, or integer)
+           skew-symmetric (real, complex, or integer)
 	   hermitian (complex)
 */
 
@@ -146,7 +177,7 @@ static int putsizeinfo(char *aline,structsize *size){
 
 
 // want to implement error codes
-static unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs){
+unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs){
   /*gets file attributes and checks for errors in metadata
     returns error codes. 0 means no problem
     check error code before using mmfattribs
@@ -195,16 +226,17 @@ static unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs)
     if(didsizeline==false){
       if (iscomment(aline)==false){//then it's a size line
 	int nsle=putsizeinfo(aline,&mmfattribs->size);
-	if ( (nsle==1) || (nsle>3) )
+	if ( (nsle<=0) || (nsle>3) )
 	  {return 2;}//bad size line}
-	    if (  (nsle==2) &&
-		  (strcmp(mmfattribs->header.format,"coordinate")==0))//vs coord
-	      {return 23;}// missing number of nonzeros in size line
+	if (  (nsle==2) &&
+	      (strcmp(mmfattribs->header.format,"coordinate")==0))//vs coord
+	  {return 23;}// missing number of nonzeros in size line
 	    
-	    didsizeline=true;
-	    //if nsle=3 and format=array, then just ignore (3rd) nonzero field	
-	  }
+	didsizeline=true;
+	//if nsle=3 and format=array, then just ignore (3rd) nonzero field
+	//if nsle=1 then it's a vector, ignore other two nonzero fields	
       }
+    }
       
     }
 
