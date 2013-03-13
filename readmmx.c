@@ -18,6 +18,38 @@ reads matrix market format files
 //se stderr
 //todo enum errors
 
+#define VECTOR "vector"
+#define MATRIX "matrix"
+//format
+#define COORDINATE "coordinate"
+#define ARRAY "array"
+//field
+#define REAL "real"
+#define DOUBLE "double"
+#define COMPLEX "complex"
+#define INTEGER "integer"
+#define PATTERN "pattern"
+//symmetry
+#define GENERAL "general"
+#define SYMMETRIC "symmetric"
+#define SKEWSYMMETRIC "skew-symmetric"
+#define HERMITIAN "hermitian"
+
+char *object[]={VECTOR, MATRIX};
+char *format[]={COORDINATE, ARRAY};
+char *field[]={REAL, DOUBLE, COMPLEX, INTEGER, PATTERN};
+char *symmetry[]={GENERAL, SYMMETRIC, SKEWSYMMETRIC, HERMITIAN};
+
+typedef struct {unsigned int object,format,field,symmetry;}
+  structheader;
+typedef struct {unsigned long int nrows, ncols , nonzeros;}
+  structsize;
+typedef struct {structheader header; structsize size;}
+  structmmfileattribs ;
+
+
+
+#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 
 //nice to make a logical errors table
@@ -29,6 +61,7 @@ static bool iscomment(char *aline);
 //static: only visibile in this file's scope
 static bool isheader(char *aline);
 static bool isblank(char *aline);
+static int indexof(char *aword, char *arrayofwords[]);
 
 
 //1. read file info
@@ -38,11 +71,9 @@ static int putsizeinfo(char *aline, structsize *size);
 //higher level
 unsigned int putfileattribs(FILE *pfile,structmmfileattribs *mmfattribs);
 
-
-
-static void *returnpointerarray(structheader *header);
-
-
+//a datatype for the following function
+typedef struct {void *i1,*i2,*value;} p2data;
+static p2data *returnpointerarray(structheader *header,p2data *p2data);
 
 //combos of header fields correspond to a dataline dtype
 //which i will make a struct. make an array of them
@@ -83,28 +114,49 @@ static void *returnpointerarray(structheader *header);
 //todo the command line checks the file
 int main(){
 
-  FILE *pfile=fopen("test.mm","r");
-  structmmfileattribs mmfatr;
+/*   FILE *pfile=fopen("test.mm","r"); */
+/*   structmmfileattribs mmfatr; */
 
-  if (pfile==NULL){
-    printf("couldn't open file \n");
-    exit(1);
-  }
-  else{
-    /* printf("file open success\n"); */
-    unsigned int aerr=putfileattribs(pfile,&mmfatr);
-    /* printf("\n nz %d%",mmfatr.size.nonzeros); */
-    printf("\n attribs errorc: %d \n",aerr);
-    char aline[nMAXLINE];
-    while(fgets(aline,nMAXLINE,pfile)!=NULL){printf(aline);}
-    }
-fclose(pfile);
+/*   if (pfile==NULL){ */
+/*     printf("couldn't open file \n"); */
+/*     exit(1); */
+/*   } */
+/*   else{ */
+/*     /\* printf("file open success\n"); *\/ */
+/*     unsigned int aerr=putfileattribs(pfile,&mmfatr); */
+/*     /\* printf("\n nz %d%",mmfatr.size.nonzeros); *\/ */
+/*     printf("\n attribs errorc: %d \n",aerr); */
+/*     char aline[nMAXLINE]; */
+/*     while(fgets(aline,nMAXLINE,pfile)!=NULL){printf(aline);} */
+/*     } */
+/* fclose(pfile); */
+
+  printf("%d" ,indexof("complesx" ,field));
 
 return 0;}
 
 
-static void *returnpointerarray(structheader *header){
 
+static p2data *returnpointerarray(structheader *header,p2data *p2data){
+
+  //pointers to index
+  if ( header->object==indexof(VECTOR,object)){p2data->i2=NULL;//only 1-D
+    if(header->format==indexof(COORDINATE,format)){(tmmindex) p2data->i1;}
+//is this all i need to say to typecast?
+  }
+  if(header->object==indexof(MATRIX,object)){
+    if(header->format==indexof(COORDINATE,format)){
+      (tmmindex) p2data->i1;(tmmindex) p2data->i2;}
+  }
+
+  //pointers to values
+  switch(header->field){
+  case (indexof(REAL,field)):  (tmmreal) p2data->value;break;
+  case indexof(DOUBLE,field):  (tmmdouble) p2data->value;break;
+  case indexof(COMPLEX,field): (tmmcomplex) p2data->value;break;
+  case indexof(INTEGER,field): (tmmint) p2data->value;break;
+  case indexof(PATTERN,field): p2data->value=NULL;break;
+  }
 
 }
 
@@ -150,12 +202,14 @@ symmetry:  general (legal for real, complex, integer, or pattern fields)
 */
 
   char dontcare[WLEN];//matrixmarket word
-  return sscanf(aline,"%s %s %s %s %s",dontcare
-		,header->object
-		, header->format
-		, header->field
-		, header->symmetry);
-//returns number of matches. should=5
+  char ot[WLEN],ft[WLEN],fd[WLEN],sy[WLEN];
+  int n;
+  n= sscanf(aline,"%s %s %s %s %s",dontcare,ot, ft, fd,sy);
+  header->object=indexof(ot,object);
+  header->format=indexof(ft,format);
+  header->field=indexof(fd,field);
+  header->symmetry=indexof(sy,symmetry);
+  return n;//returns number of matches. should=5
 }
 
 
@@ -169,7 +223,6 @@ static int putsizeinfo(char *aline,structsize *size){
 			      ,&size->nrows
 			      ,&size->ncols
 			      ,&size->nonzeros);
-
   return nsizelineelems;
 //should return 2 if array. 3 for coordinate
 }
@@ -201,22 +254,22 @@ unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs){
 	  return 1;//"bad header line";
 	}
 	else{ //the header fields are filled but check contents
-	  if ((strcmp(mmfattribs->header.object,"matrix")==0) ||
-	      (strcmp(mmfattribs->header.object,"vector")==0)){/*no problem*/}
+	  if ( (indexof(MATRIX,object)==mmfattribs->header.object)  ||
+	       (indexof(VECTOR,object)==mmfattribs->header.object) ){/*no problem*/}
 	  else{return 11;}//unknown object
-	  if (strcmp(mmfattribs->header.format,"coordinate")==0 ||
-	      strcmp(mmfattribs->header.format,"array")==0){}
+	  if ( (indexof(COORDINATE,format)==mmfattribs->header.format) ||
+	       (indexof(ARRAY,format)==mmfattribs->header.format)){}
 	  else {return 12;}//unknown format
-	  if (strcmp(mmfattribs->header.field,"real")==0 ||
-	      strcmp(mmfattribs->header.field,"double")==0 ||
-	      strcmp(mmfattribs->header.field,"complex")==0 ||
-	      strcmp(mmfattribs->header.field,"integer")==0 ||
-	      strcmp(mmfattribs->header.field,"pattern")==0){}
+	  if ( (indexof(REAL,field)==mmfattribs->header.field) ||
+	       indexof(DOUBLE,field)==mmfattribs->header.field ||
+	       indexof(COMPLEX,field)==mmfattribs->header.field ||
+	       indexof(INTEGER,field)==mmfattribs->header.field ||
+	       indexof(PATTERN,field)==mmfattribs->header.field){}
 	  else{return 13;}//unknown field
-	  if (strcmp(mmfattribs->header.symmetry,"general")==0 ||
-	      strcmp(mmfattribs->header.symmetry,"symmetric")==0 ||
-	      strcmp(mmfattribs->header.symmetry,"skew-symmetric")==0 ||
-	      strcmp(mmfattribs->header.symmetry,"hermitian")==0){}
+	  if ( indexof(GENERAL,symmetry)==mmfattribs->header.symmetry ||
+	     indexof(SYMMETRIC,symmetry)==mmfattribs->header.symmetry ||
+	      indexof(SKEWSYMMETRIC,symmetry)==mmfattribs->header.symmetry ||
+	     indexof(HERMITIAN,symmetry)==mmfattribs->header.symmetry){}
 	  else{return 14;}//unknown symmetry
 	  didheaderline=true;}
       }
@@ -229,7 +282,7 @@ unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs){
 	if ( (nsle<=0) || (nsle>3) )
 	  {return 2;}//bad size line}
 	if (  (nsle==2) &&
-	      (strcmp(mmfattribs->header.format,"coordinate")==0))//vs coord
+	      ( indexof("coordinate",format)==mmfattribs->header.format))//vs coord
 	  {return 23;}// missing number of nonzeros in size line
 	    
 	didsizeline=true;
@@ -246,7 +299,15 @@ unsigned int putfileattribs(FILE *pfile, structmmfileattribs *mmfattribs){
   }
 
 
+static int indexof(char *aword, char *arrayofwords[]){
+  int i; 
+  for (i=0 ; i<COUNT_OF(*arrayofwords) ;i++){
+    if (strcmp(aword,arrayofwords[i])==0){return i;}}
+  return -1;//not found
+}
 
+
+//
 
 //def readarray dataline
 //def readcoord dataline

@@ -11,14 +11,9 @@ const char *strmmid="%%MatrixMarket";
   why? idk*/
 //const int WLEN=30;//"word length"
 
+/*keywords*/
+//object values
 
-
-typedef struct {char object[WLEN],format[WLEN],field[WLEN],symmetry[WLEN];}
-  structheader;
-typedef struct {unsigned long int nrows, ncols , nonzeros;}
-  structsize;
-typedef struct {structheader header; structsize size;}
-  structmmfileattribs ;
 
  
 /* data types of numerical values in the file */
@@ -26,9 +21,9 @@ typedef struct {structheader header; structsize size;}
 #define tmmindex unsigned int //bc i want it as a string
 //typedef  TMMINDEX tmmindex;
 #define tmmint int
-#define tmmfloat  float
+#define tmmreal  float
 #define tmmdouble double
-#define tmmcomplex double complex//double complex or complex?
+#define tmmcomplex double complex //double complex or complex?
 
  //typedef struct {ptrtofunc,ptrtodatatype}
 //since i can't have a list of data types OR even refer
