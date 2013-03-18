@@ -1,4 +1,4 @@
 minlinalg
 =========
 
-A minimalist linear algebra library for educational purposes
+A minimal linear algebra library for educational purposes
