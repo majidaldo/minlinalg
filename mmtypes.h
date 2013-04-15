@@ -23,27 +23,27 @@
 #define SKEWSYMMETRIC "skew-symmetric"
 #define HERMITIAN "hermitian"
 
-/* data types of numerical values in the file */
+/* C data types of corresponding numerical values in the file */
 //#define TMMINDEX unsigned int
 #define tmmindex unsigned int //bc i want it as a string
-#define stmmindex "unsigned int"
-//typedef  TMMINDEX tmmindex;
 #define tmmreal  float  //should rename to cmmreal for "C"
 #define tmmdouble double
-#define tmmcomplex double complex //double complex or complex?
+#define tmmcomplex  complex //double complex or complex?
 #define tmmint int
+#define tmmpattern bool
 
 //why does const fail?
-  char *object[]={VECTOR, MATRIX};
-  char *format[]={COORDINATE, ARRAY};
-  char *field[]={REAL, DOUBLE, COMPLEX, INTEGER,PATTERN };
-char *ctypes[]={"float* ","double* ","float* ","int* "};//should match field
-  char *symmetry[]={GENERAL, SYMMETRIC, SKEWSYMMETRIC, HERMITIAN};
+char *object[]={VECTOR, MATRIX};
+char *format[]={COORDINATE, ARRAY};
+char *field[]={REAL, DOUBLE, COMPLEX, INTEGER,PATTERN };
+size_t sizeoftype[]={//match field[]
+  sizeof(tmmreal),sizeof(tmmdouble),sizeof(tmmcomplex),sizeof(tmmint),sizeof(tmmpattern)};
+//..these sizes will be used for offset.
+char *ctypes[]={"float* ","double* ","float* ","int* ",""};//should match field[]
+//..these strings are used for generating code
+char *symmetry[]={GENERAL, SYMMETRIC, SKEWSYMMETRIC, HERMITIAN};
 
 
 
 
 #endif
-
-
-
