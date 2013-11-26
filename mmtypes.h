@@ -33,15 +33,15 @@
 #define tmmpattern bool
 
 //why does const fail?
-char *object[]={VECTOR, MATRIX};
-char *format[]={COORDINATE, ARRAY};
-char *field[]={REAL, DOUBLE, COMPLEX, INTEGER,PATTERN };
-size_t sizeoftype[]={//match field[]
+static char *object[]={VECTOR, MATRIX};
+static char *format[]={COORDINATE, ARRAY};
+static char *field[]={REAL, DOUBLE, COMPLEX, INTEGER,PATTERN };
+static size_t sizeoftype[]={//match field[]
   sizeof(tmmreal),sizeof(tmmdouble),sizeof(tmmcomplex),sizeof(tmmint),sizeof(tmmpattern)};
 //..these sizes will be used for offset.
-char *ctypes[]={"float* ","double* ","float* ","int* ",""};//should match field[]
+static char *ctypes[]={"float* ","double* ","float* ","int* ",""};//should match field[]
 //..these strings are used for generating code
-char *symmetry[]={GENERAL, SYMMETRIC, SKEWSYMMETRIC, HERMITIAN};
+static char *symmetry[]={GENERAL, SYMMETRIC, SKEWSYMMETRIC, HERMITIAN};
 
 
 

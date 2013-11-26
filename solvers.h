@@ -5,7 +5,7 @@ static void *swaprows(unsigned int m1, unsigned int m2, structmatrix *m);
 //...used in gauss
 
 
-static structmatrix backsolve(structmatrix *echform);
+ structmatrix backsolve(structmatrix *echform);
 static structmatrix vecT(structmatrix *vec);
 static void *mulmatbyconst(double *constv, structmatrix *m);
 

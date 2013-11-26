@@ -8,75 +8,6 @@
 #include "solvers.h"
 
 
-/* int main(){ */
-
-/*  /\*  double rowmjrarrayam[]={  2, 1,-1, 8 *\/ */
-/*  /\* 			  ,-3,-1, 2,-11 *\/ */
-/*  /\* 			  ,-2, 1, 2,-3}; *\/ */
-/*  /\*  structmatrix am=creatematrix(rowmjrarrayam *\/ */
-/*  /\* 			      ,3,4 *\/ */
-/*  /\* 			      ,endt(MATDOUBLE),rowmjr); *\/ */
-
-/*  /\* //test gauss *\/ */
-/*  /\*  gaussop(&am); *\/ */
-/*  /\*  structmatrix solns=backsolve(&am); *\/ */
-/*  /\*  printmat(&am); *\/ */
-/*  /\*  printmat(&solns); *\/ */
-
-
-
-
-/* /\*   double rowmjrarraya[]={   2, 1,-1 *\/ */
-/* /\* 			  ,-3,-1, 2 *\/ */
-/* /\* 			  ,-2, 1, 2}; *\/ */
-/* /\* structmatrix a=creatematrix(rowmjrarraya *\/ */
-/* /\* 			      ,3,3 *\/ */
-/* /\* 			      ,endt(MATDOUBLE),rowmjr); *\/ */
-/* /\*  double rowmjrarrayb[]={ 8 *\/ */
-/* /\* 			,-11 *\/ */
-/* /\* 			,-3}; *\/ */
-/* /\* structmatrix b=creatematrix(rowmjrarrayb *\/ */
-/* /\* 			      ,3,1 *\/ */
-/* /\* 			      ,endt(MATDOUBLE),rowmjr); *\/ */
-
-
-/* //works for jacobi */
-/*   double rowmjrarraya[]={   7, -2,1,2 */
-/*   			    ,2,8, 3,1 */
-/*   			    ,-1, 0, 5,2 */
-/*   			    ,0,2,-1,4}; */
-/*   structmatrix a=creatematrix(rowmjrarraya */
-/*   			      ,4,4 */
-/*   			      ,endt(MATDOUBLE),rowmjr); */
-/*   double rowmjrarrayb[]={ 3 */
-/*   			  ,-2 */
-/*   			  ,5 */
-/*   			  ,4}; */
-/*   structmatrix b=creatematrix(rowmjrarrayb */
-/*   			      ,4,1 */
-/*   			      ,endt(MATDOUBLE),rowmjr); */
-
-
-/*   structmatrix XG=gaussseidel(&a,&b); */
-/*   printmat(&XG); */
-/*   structmatrix XS=soverrelaxation(&a,&b); */
-/*   printmat(&XS); */
-
-/*   double acga[]={   4,-1, 1 */
-/* 		  ,-1, 4,-2 */
-/* 		  , 1,-2, 4}; */
-/*   double bcga[]={ 12 */
-/* 		 ,-1 */
-/* 		 , 5}; */
-/*   structmatrix acg=creatematrix(acga,3,3,endt(MATDOUBLE),rowmjr); */
-/*   structmatrix bcg=creatematrix(bcga,3,1,endt(MATDOUBLE),rowmjr); */
-/*   structmatrix XCG=conjugategradient(&acg,&bcg); */
-/*   printmat(&XCG);//exact answer is 3,1,1 */
-
-
-/*   return 0; */
-/* } */
-
 
 //todo check sqr mtrx
 void *gaussop(structmatrix *AM){//containts the rhs and lhs. in place
@@ -128,7 +59,7 @@ fpidx idx=getidxingfunc(m);//(r,c,mat)
 #undef av
 }
 
-static structmatrix backsolve(structmatrix *echform){
+ structmatrix backsolve(structmatrix *echform){
   structmatrix solnm=creatematrix(malloc(sizeof(double)*echform->nrows)
 				  ,echform->nrows,1//solns in col vector
 				  ,endt(MATDOUBLE),rowmjr);
@@ -396,18 +327,25 @@ structmatrix conjugategradient(structmatrix *A,structmatrix *b){
       rPv(ri,zero)=rv(ri,zero);
     }
 
+    /* todo does not work if i add these free statements
+       does the memory get freed with each loop? i thought it would not!*/
+    /*
     free(rPT.data);
     free(rPTrP.data);
     free(ApP.data);
     free(rT.data);
     free(rTr.data);
+    */
     k++;}
 
+
+   
+  
   free(XP.data);
   free(rP.data);
   free(pP.data);
   free(r.data);
-  free(p.data);
+  free(p.data); 
   return X;
 #undef Xv
 #undef XPv
